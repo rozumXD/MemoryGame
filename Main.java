@@ -1,7 +1,10 @@
 import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect.Type;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Scanner;
 import javax.print.event.PrintJobListener;
 import javax.swing.border.Border;
@@ -21,10 +24,9 @@ public class Main {
 
     }
 
-    static void board(List words, int choosenLvl){
+    static void board(List words, int choosenLvl) throws FileNotFoundException{
 
-        if(choosenLvl==1){                                 //POZIOM TRUDNOSCI LATWY
-            int chances = 10;
+        if(choosenLvl==1){                                 //---------------------------------------POZIOM TRUDNOSCI LATWY--------------------------------------------
             Object[][] boardOfWords = new Object[2][4];
 
             for(int i=0;i<boardOfWords.length;i++){       //tworzenie tablicy kart
@@ -48,7 +50,8 @@ public class Main {
         }
 
         boolean gameStart = true ;
-        while(gameStart){                       
+        while(gameStart){    
+            int chances = 10;                   
 
             Object a1 = "X"; 
             Object a2 = "X";
@@ -62,7 +65,9 @@ public class Main {
             
 
             while(chances!=0){
-                gameStart = false;
+                
+                Instant start = Instant.now();           //rozpoczecie naliczania czasu
+
                 System.out.println("Guess chances: " + chances);
                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4);   //wyswietlanie kart
                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4);
@@ -95,23 +100,24 @@ public class Main {
                 if(bet2.startsWith("B")&&bet2.endsWith("1")){
                     b1 = boardOfWords[1][0];
                     temp_b = boardOfWords[1][0];
-                }else if(bet2.startsWith("B")&&bet2.endsWith("2")){
+                }else if(bet2.startsWith("B")||bet2.startsWith("b")&&bet2.endsWith("2")){
                     b2 = boardOfWords[1][1];
                     temp_b = boardOfWords[1][1];
-                }else if(bet2.startsWith("B")&&bet2.endsWith("3")){   
+                }else if(bet2.startsWith("B")||bet2.startsWith("b")&&bet2.endsWith("3")){   
                     b3 = boardOfWords[1][2];
                     temp_b = boardOfWords[1][2];
-                }else if(bet2.startsWith("B")&&bet2.endsWith("4")){
+                }else if(bet2.startsWith("B")||bet2.startsWith("b")&&bet2.endsWith("4")){
                     b4 = boardOfWords[1][3];
                     temp_b = boardOfWords[1][3];
                 }
 
                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4);
                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4);
-
-                if(temp_a.equals(temp_b)){                                         //wyswietlanie stale dobrych odpowiedzi
+                    int points = 0;
+                if(temp_a.equals(temp_b)){                                         //wyswietlanie stale dobrych odpowiedzi + punkty
                     Object goodGuess_a = temp_a;
                     Object goodGuess_b = temp_b;
+                    points++;
 
                 }else{
                     Object badGuess_a = temp_a;                    //markowanie zlych odpowiedzi na X
@@ -154,11 +160,22 @@ public class Main {
                         if(a3!="X"){
                             if(a4!="X"){    
                                 System.out.println("\nCongratulations ! U found them all!\n");
+                                Instant finish = Instant.now();
+                                long timeElapsed = Duration.between(start, finish).toSeconds();
+                                System.out.println("Your time: " + timeElapsed + " seconds.");        //czas gry
+                                System.out.println("Your score: " + points);                          //punkty
                                 System.out.println("    1    " + "    2    " + "    3    " + "    4    ");
                                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4);
                                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4);
-
-                                gameStart = false;
+                                                                                    
+                                System.out.println("Whats your name : " );                      //zapis wyniku do pliku 
+                                Scanner name = new Scanner(System.in);
+                                String yourName = name.nextLine();
+                                PrintWriter saveToFile = new PrintWriter("loses.txt");
+                                saveToFile.println("EASY | " + yourName + " | " + points + " | " + timeElapsed);
+                                saveToFile.close();
+                                
+                                
                             }
                         }
                     }
@@ -166,15 +183,34 @@ public class Main {
 
                 chances--;
 
-                if(chances==0){                                   //adnotacja i koniec gry jesli proby wyniosly wartosc 0
+                if(chances==0){                
+                    Instant finish = Instant.now();
+                    long timeElapsed = Duration.between(start, finish).toSeconds();
+                    System.out.println("Your time: " + timeElapsed + " seconds.");                   //adnotacja i koniec gry jesli proby wyniosly wartosc 0
                     System.out.println("GAME OVER :(\n ");
-                    gameStart=false;
+
+                                System.out.println("Whats your name : " );                      //zapis wyniku do pliku 
+                                Scanner name = new Scanner(System.in);
+                                String yourName = name.nextLine();
+                                PrintWriter saveToFile = new PrintWriter("loses.txt");
+                                saveToFile.println("EASY | " + yourName + " | " + points + " | " + timeElapsed);
+                                saveToFile.close();
                 }
+            }   
+
+            System.out.println("Restart the game.  (Y/N)");                                     //restart gry
+            Scanner scanner3 = new Scanner(System.in);
+            String restart = scanner3.nextLine();
+            if(restart=="Y"){
+                 gameStart = true;
+            }else if(restart=="N"){
+                 gameStart = false;
             }
+
         }
 
         }else if(choosenLvl==2){              //---------------------------------------POZIOM TRUDNOSCI TRUDNY --------------------------------------------------
-            int chances = 15;
+            
             Object[][] boardOfWords = new Object[2][8];
 
             for(int i=0;i<boardOfWords.length;i++){              //tworzenie tablicy kart
@@ -208,6 +244,7 @@ public class Main {
         Boolean gameStart = true;
         while(gameStart){
             gameStart = false;
+            int chances = 15;
 
             Object a1 = "X"; 
             Object a2 = "X";
@@ -228,7 +265,7 @@ public class Main {
             Object b8 = "X";
 
             while(chances!=0){
-                gameStart = false;
+                Instant start = Instant.now();
                 System.out.println("Guess chances: " + chances);
                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4+" "+ a5 +" "+ a6 +" "+ a7 +" "+ a8);
                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4+" "+ b5 +" "+ b6 +" "+ b7 +" "+ b8);
@@ -298,10 +335,13 @@ public class Main {
 
                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4+" "+ a5 +" "+ a6 +" "+ a7 +" "+ a8);
                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4+" "+ b5 +" "+ b6 +" "+ b7 +" "+ b8);
+                int points = 0;
 
                 if(temp_a.equals(temp_b)){      //jesli dobre karty to zostaja wyswietlone wciaz 
                     Object goodGuess_a = temp_a;
                     Object goodGuess_b = temp_b;
+                    
+                    points++;
 
                 }else{                           //dla zlego odgadniecia karty zamieniaja sie na X
                     Object badGuess_a = temp_a;
@@ -375,12 +415,24 @@ public class Main {
                                         if(a7!="X"){ 
                                             if(a8!="X"){
                                                 System.out.println("\nGOOD JOB! U found them all!\n");
+                                                Instant finish = Instant.now();
+                                                long timeElapsed = Duration.between(start, finish).toSeconds();
+                                                System.out.println("Your time: " + timeElapsed + " seconds.");                     //czas gry
+                                                System.out.println("Your score: " + points);                                       //punkty
                                                 System.out.println("    1    " + "    2    " + "    3    " + "    4    ");
                                                 System.out.println("A" +" "+ a1 +" "+ a2 +" "+ a3 +" "+ a4+" "+ a5 +" "+ a6 +" "+ a7 +" "+ a8);
                                                 System.out.println("B" +" "+ b1 +" "+ b2 +" "+ b3 +" "+ b4+" "+ b5 +" "+ b6 +" "+ b7 +" "+ b8);
 
+                                                System.out.println("Whats your name : " );                      //zapis wyniku do pliku 
+                                                Scanner name = new Scanner(System.in);
+                                                String yourName = name.nextLine();
+                                                PrintWriter saveToFile = new PrintWriter("loses.txt");
 
-                                                    gameStart = false;
+                                                saveToFile.println("HARD | " + yourName + " | " + points + " | " + timeElapsed);
+                                                saveToFile.close();
+ 
+
+                                                    
                                             }
                                         }
                                     }
@@ -393,12 +445,34 @@ public class Main {
                 chances--; 
 
                 if(chances==0){
+                    Instant finish = Instant.now();
+                    long timeElapsed = Duration.between(start, finish).toSeconds();
+                    System.out.println("Your time: " + timeElapsed + " seconds.");                   //adnotacja i koniec gry jesli proby wyniosly wartosc 0
                     System.out.println("GAME OVER :(\n ");
-                    gameStart=false;
+
+                                System.out.println("Whats your name : " );                      //zapis wyniku do pliku 
+                                Scanner name = new Scanner(System.in);
+                                String yourName = name.nextLine();
+                                PrintWriter saveToFile = new PrintWriter("loses.txt");
+                                saveToFile.println("HARD | " + yourName + " | " + points + " | " + timeElapsed);
+                                saveToFile.close();
                 }
             }
+
+            System.out.println("Restart the game.  (Y/N)");          //restart gry
+            Scanner scanner3 = new Scanner(System.in);
+            String restart = scanner3.nextLine();
+            if(restart=="Y"){
+                 gameStart = true;
+            }else if(restart=="N"){
+                 gameStart = false;
+            }
+
         }      
             }
+        
+            
+        
         }
         
     
@@ -432,7 +506,7 @@ public class Main {
             switch (userChoice) {
                 case 1 -> result = 1;
                 case 2 -> result = 2;
-                case 3 -> result = 3;  
+                case 3 -> System.exit(0);  
             }
 
             shouldContinue = false;
